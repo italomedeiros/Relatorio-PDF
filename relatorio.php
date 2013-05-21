@@ -1,19 +1,18 @@
 <?php
+
 // Caminho para o arquivo fpdf.php
 include("config.php");
 
 $escritorio = $_GET['idEscritorio'];
-$escritorio = utf8_decode($escritorio);
-$status = $_GET['status'];
-$status = utf8_decode($status);
+$status = rawurldecode($_GET['status']);
 $tipoCert = $_GET['tipoCert'];
 $dataemissao1 = $_GET['dtDe'];
 $dataemissao2 = $_GET['dtAte'];
 
 
-
-if ($tipoCert == 0 && $status == 'Todos')
+if ($tipoCert === "0" && $status === "Todos")
 {
+    //echo $status;
     $sql = mysql_query("SELECT scripts.tipo as tipo, 
        scripts.mostrar as mostrar, 
        certidao_processada.certidao_contratada_cnpj_idcnpj as cnpj, 
@@ -32,8 +31,9 @@ WHERE certidao_contratada.empresa_idEscritorio = '$escritorio'
 AND certidao_processada.dataHoraConcluido >= '$dataemissao1' 
 AND certidao_processada.dataHoraConcluido <= '$dataemissao2'") or die(mysql_error());
 }
-if ($tipoCert == 0 && $status != 'Todos')
+elseif ($tipoCert === "0" && $status != "Todos")
 {
+    //echo ("2");
     $sql = mysql_query("SELECT scripts.tipo as tipo, 
        scripts.mostrar as mostrar, 
        certidao_processada.certidao_contratada_cnpj_idcnpj as cnpj, 
@@ -53,8 +53,9 @@ AND certidao_processada.dataHoraConcluido >= '$dataemissao1'
 AND certidao_processada.dataHoraConcluido <= '$dataemissao2'
 AND certidao_processada.status = '$status'") or die(mysql_error());
 }
-if ($tipoCert != 0 && $status == 'Todos')
+elseif($tipoCert != "0" && $status === "Todos")
 {
+    //echo ("3");
     $sql = mysql_query("SELECT scripts.tipo as tipo, 
        scripts.mostrar as mostrar, 
        certidao_processada.certidao_contratada_cnpj_idcnpj as cnpj, 
@@ -72,11 +73,12 @@ INNER JOIN scripts
 WHERE certidao_contratada.empresa_idEscritorio = '$escritorio'
 AND certidao_processada.dataHoraConcluido >= '$dataemissao1' 
 AND certidao_processada.dataHoraConcluido <= '$dataemissao2'
-AND certidao_processada.certidao_contratada_scripts_idscript = '$tipoCert'") or die(mysql_error());
+AND certidao_processada.certidao_contratada_scripts_idscript = $tipoCert") or die(mysql_error());
 }
 
-if ($tipoCert != 0 && $status != 'Todos')
+elseif ($tipoCert != "0" && $status != "Todos")
 {
+    //echo ("4");
     $sql = mysql_query("SELECT scripts.tipo as tipo, 
        scripts.mostrar as mostrar, 
        certidao_processada.certidao_contratada_cnpj_idcnpj as cnpj, 
@@ -94,29 +96,28 @@ INNER JOIN scripts
 WHERE certidao_contratada.empresa_idEscritorio = '$escritorio'
 AND certidao_processada.dataHoraConcluido >= '$dataemissao1' 
 AND certidao_processada.dataHoraConcluido <= '$dataemissao2'
-AND certidao_processada.certidao_contratada_scripts_idscript = '$tipoCert'
+AND certidao_processada.certidao_contratada_scripts_idscript = $tipoCert
 AND certidao_processada.status = '$status'") or die(mysql_error());
 }
 
 
-/*$html = '<table border="1"><tbody>';
-while ($linha = mysql_fetch_array($sql))
-{
-$html = '<tr><td>'.$linha['cnpj'].'</td><td>'.$linha['tipo'].'</td><td>'.$linha['status'].'</td><td>'.$linha['dataHora'].'</td></tr>';
-}
-$html = '<tr><td>TESTE1</td><td>TESTE2</td><td>TESTE3</td><td>TESTE4</td></tr>';
-$html = '</tbody></table>';*/
+/* $html = '<table border="1"><tbody>';
+  while ($linha = mysql_fetch_array($sql))
+  {
+  $html = '<tr><td>'.$linha['cnpj'].'</td><td>'.$linha['tipo'].'</td><td>'.$linha['status'].'</td><td>'.$linha['dataHora'].'</td></tr>';
+  }
+  $html = '<tr><td>TESTE1</td><td>TESTE2</td><td>TESTE3</td><td>TESTE4</td></tr>';
+  $html = '</tbody></table>'; */
 
 
-//$html = '<script type="text/javascript">document.write(?\u0048\u0069\u0021?)';
-$html = '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />';
-$html = $html.'<table style="border: solid 1px; text-align:center;">';
-$html = $html.'<tr><td>CNPJ</td><td>CERTID&Atilde;O</td><td>STATUS</td><td>DATA-CONCLUS&Atilde;O</td></tr>';
+$html = '<table style="border: solid 1px; border-spacing: 4px; text-align:center;">';
+//$html = $html.'<tr><td>RELAT&Oacute;RIO DE EMISS&Atilde;O DE CERTID&Otilde;ES</td></tr>';
+$html = $html . '<tr><td>CNPJ</td><td>CERTID&Atilde;O</td><td>STATUS</td><td>DATA-CONCLUS&Atilde;O</td></tr>';
 while ($linha = mysql_fetch_array($sql))
 {
-$html = $html.'<tr><td>'.$linha['cnpj'].'</td><td>'.$linha['tipo'].'</td><td>'.$linha['status'].'</td><td>'.$linha['dataHora'].'</td></tr>';
+    $html = $html . '<tr><td>' . $linha['cnpj'] . '</td><td>' . $linha['tipo'] . '</td><td>' . $linha['status'] . '</td><td>' . $linha['dataHora'] . '</td></tr>';
 }
-$html = $html.'</table>';
+$html = $html . '</table>';
 
 
 require_once('tcpdf/config/lang/eng.php');
@@ -150,9 +151,7 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 //set some language-dependent strings
 //$pdf->setLanguageArray($l);
-
 // ---------------------------------------------------------
-
 // set font
 $pdf->SetFont('helvetica', 'I', 10);
 
@@ -168,7 +167,6 @@ $pdf->Image("logo.jpg", 95, 10, 15, '', $ext, '', 'C', false, 300, '', false, fa
 $pdf->writeHTML($html, true, false, false, false, '');
 
 // ---------------------------------------------------------
-
 //Close and output PDF document
 $pdf->Output('account.pdf', 'I');
 
