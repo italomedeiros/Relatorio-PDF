@@ -4,12 +4,11 @@
 include("config.php");
 
 $escritorio = $_GET['idEscritorio'];
-$status = rawurldecode($_GET['status']);
+$status = utf8_decode($_GET['status']);
 $tipoCert = $_GET['tipoCert'];
 $dataemissao1 = $_GET['dtDe'];
 $dataemissao2 = $_GET['dtAte'];
-
-
+//echo $status;
 if ($tipoCert === "0" && $status === "Todos")
 {
     //echo $status;
@@ -56,7 +55,7 @@ AND certidao_processada.status = '$status'") or die(mysql_error());
 elseif($tipoCert != "0" && $status === "Todos")
 {
     //echo ("3");
-    $sql = mysql_query("SELECT scripts.tipo as tipo, 
+    $sql1 = "SELECT scripts.tipo as tipo, 
        scripts.mostrar as mostrar, 
        certidao_processada.certidao_contratada_cnpj_idcnpj as cnpj, 
        DATE_FORMAT(certidao_processada.dataHoraConcluido, '%d/%m/%Y  %H:%i') as dataHora, 
@@ -73,7 +72,11 @@ INNER JOIN scripts
 WHERE certidao_contratada.empresa_idEscritorio = '$escritorio'
 AND certidao_processada.dataHoraConcluido >= '$dataemissao1' 
 AND certidao_processada.dataHoraConcluido <= '$dataemissao2'
-AND certidao_processada.certidao_contratada_scripts_idscript = $tipoCert") or die(mysql_error());
+AND certidao_processada.certidao_contratada_scripts_idscript = $tipoCert";
+    $sql = mysql_query($sql1) or die(mysql_error());
+    //echo $sql1;
+
+    
 }
 
 elseif ($tipoCert != "0" && $status != "Todos")
@@ -109,16 +112,22 @@ AND certidao_processada.status = '$status'") or die(mysql_error());
   $html = '<tr><td>TESTE1</td><td>TESTE2</td><td>TESTE3</td><td>TESTE4</td></tr>';
   $html = '</tbody></table>'; */
 
+$html ='<table style="border: solid 1px; border-spacing: 4px; text-align:center;">';
+$html =$html .'<tr><td>RELAT&Oacute;RIO DE EMISS&Atilde;O DE CERTID&Otilde;ES</td></tr>';
+$html =$html .'</table>';
 
-$html = '<table style="border: solid 1px; border-spacing: 4px; text-align:center;">';
-//$html = $html.'<tr><td>RELAT&Oacute;RIO DE EMISS&Atilde;O DE CERTID&Otilde;ES</td></tr>';
+$html = $html .'<table style="border: solid 1px; border-spacing: 4px; text-align:center;">';
+
 $html = $html . '<tr><td>CNPJ</td><td>CERTID&Atilde;O</td><td>STATUS</td><td>DATA-CONCLUS&Atilde;O</td></tr>';
 while ($linha = mysql_fetch_array($sql))
 {
-    $html = $html . '<tr><td>' . $linha['cnpj'] . '</td><td>' . $linha['tipo'] . '</td><td>' . $linha['status'] . '</td><td>' . $linha['dataHora'] . '</td></tr>';
+    $html = $html . '<tr><td>' . $linha['cnpj'] . '</td><td>' . utf8_encode($linha['tipo']) . " - " . utf8_encode($linha['mostrar']). '</td><td>' . utf8_encode($linha['status']) . '</td><td>' .  utf8_encode($linha['dataHora']) . '</td></tr>';
 }
 $html = $html . '</table>';
 
+$html =$html .'<table style="border: solid 1px; border-spacing: 4px; text-align:center;">';
+$html =$html .'<tr><td>&#169; Copyright 2013 - NetCertid&atilde;o</td></tr>';
+$html =$html .'</table>';
 
 require_once('tcpdf/config/lang/eng.php');
 require_once('tcpdf/tcpdf.php');
